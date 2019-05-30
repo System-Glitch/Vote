@@ -1,4 +1,8 @@
-# vote
+# Vote
+
+A very simple vote system based on a Solidity Smart Contract and using a Vue.js UI. This project **is not** meant to be used in production. It's a Proof of Concept and works with a local Ganache only.
+
+![Screenshot](.github/screenshit.png?raw=true)
 
 ## Project setup
 ```
