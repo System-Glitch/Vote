@@ -1,5 +1,8 @@
-pragma solidity ^0.5.3;
+// SPDX-License-Identifier: UNLICENSED;
+
+pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
+
 
 contract vote {
 
@@ -20,13 +23,13 @@ contract vote {
         string myName;
     }
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
         vote_state = 0;
         nb_candidate = 0;
     }
 
-    function get_vote_state() public view returns(uint){
+    function get_vote_state() public view returns(uint) {
         return vote_state;
     }
 
@@ -46,9 +49,10 @@ contract vote {
         require (isCandidateByAddress[msg.sender] == false);
         require (bytes(myName).length > 1);
 
-        uint length = candidates.push(Candidate(msg.sender, 0, myName));
+        uint length = candidates.length;
+        candidates.push(Candidate(msg.sender, 0, myName));
         isCandidateByAddress[msg.sender] = true;
-        indexByAddress[msg.sender] = length - 1;
+        indexByAddress[msg.sender] = length;
         nb_candidate++;
     }
 
