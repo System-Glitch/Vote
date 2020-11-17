@@ -47,7 +47,7 @@
                     .then(result => {
                         this.state = result
 
-                        window.Vue.nextTick(() => {
+                        this.$nextTick(() => {
                             if (this.state >= 0) {
                                 this.$refs.candidates.refresh(candidates => this.refreshWinner(true, candidates))
                             }
@@ -80,6 +80,16 @@
                     this.winnerSecondRound = maxCandidate
                 }
             }
+        },
+        mounted() {
+            this.intervalID = setInterval(() => {
+                this.$nextTick(() => {
+                    this.refresh()
+                })
+            }, 5000)
+        },
+        beforeDestroy() {
+            clearInterval(this.intervalID)
         }
     }
 </script>
