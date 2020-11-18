@@ -13,11 +13,10 @@
                 <standform v-if="state >= 0" @submit="refresh" @refresh="refresh"/>
 
                 <hr>
-                <h3>Premier tour</h3>
                 <candidates v-if="state >= 0" :disabled="state != 1" :showResults="state > 1" ref="candidates"/>
                 <b-row v-if="winner && state > 1">
                     <b-col>
-                        <h4 class="text-center">Élu au premier tour : <b>{{ winner.name }}</b> avec <b>{{ winner.voteCount }}%</b> des voix.</h4>
+                        <h4 class="text-center">Élu : <b>{{ winner.name }}</b> avec <b>{{ winner.voteCount }}</b> points.</h4>
                     </b-col>
                 </b-row>
             </template>
