@@ -1,28 +1,22 @@
 <template>
     <section class="container">
         <b-card id="app">
-            <h1 class="logo-header" slot="header"><img src="~@/assets/logo.png" class="logo"><span>Vote</span></h1>
+            <template #header>
+                <h1 class="logo-header">
+                    <img src="~@/assets/logo.png" class="logo">
+                    <span>Vote</span>
+                </h1>
+            </template>
 
             <voteform :disabled="state >= 0" @submit="refresh"/>
             <template v-if="state >= 0">
                 <standform v-if="state >= 0" @submit="refresh" @refresh="refresh"/>
 
                 <hr>
-                <h3>Premier tour</h3>
                 <candidates v-if="state >= 0" :disabled="state != 1" :showResults="state > 1" ref="candidates"/>
-                <b-row v-if="winnerFirstRound && state > 1">
+                <b-row v-if="winner && state > 1">
                     <b-col>
-                        <h4 class="text-center">Élu au premier tour : <b>{{ winnerFirstRound.name }}</b> avec <b>{{ winnerFirstRound.voteCount }}%</b> des voix.</h4>
-                    </b-col>
-                </b-row>
-            </template>
-            <template v-if="state > 1">
-                <hr>
-                <h3>Second tour</h3>
-                <candidates :disabled="state > 2" :showResults="state > 2" :firstRound="false" ref="candidatesRound2"/>
-                <b-row v-if="winnerSecondRound && state > 2">
-                    <b-col>
-                        <h4 class="text-center">Élu au scond tour : <b>{{ winnerSecondRound.name }}</b> avec <b>{{ winnerSecondRound.voteCount }}%</b> des voix.</h4>
+                        <h4 class="text-center">Élu : <b>{{ winner.name }}</b> avec <b>{{ winner.voteCount }}</b> points.</h4>
                     </b-col>
                 </b-row>
             </template>
@@ -35,8 +29,7 @@
         name: 'app',
         data () {
             return {
-                winnerFirstRound: null,
-                winnerSecondRound: null,
+                winner: null,
                 state: -1
             }
         },
@@ -49,11 +42,7 @@
 
                         this.$nextTick(() => {
                             if (this.state >= 0) {
-                                this.$refs.candidates.refresh(candidates => this.refreshWinner(true, candidates))
-                            }
-
-                            if (this.state > 2) {
-                                this.$refs.candidatesRound2.refresh(candidates => this.refreshWinner(false, candidates))
+                                this.$refs.candidates.refresh(candidates => this.refreshWinner(candidates))
                             }
                         })
                     })
@@ -63,7 +52,7 @@
                     })
                 }
             },
-            refreshWinner: function (firstRound, candidates) {
+            refreshWinner: function (candidates) {
                 let max = 0
                 let maxCandidate = null
                 for (let key in candidates) {
@@ -74,21 +63,17 @@
                     }
                 }
 
-                if (firstRound) {
-                    this.winnerFirstRound = maxCandidate
-                } else {
-                    this.winnerSecondRound = maxCandidate
-                }
+                this.winner = maxCandidate
             }
         },
-        mounted() {
+        mounted () {
             this.intervalID = setInterval(() => {
                 this.$nextTick(() => {
                     this.refresh()
                 })
             }, 5000)
         },
-        beforeDestroy() {
+        beforeUnmount () {
             clearInterval(this.intervalID)
         }
     }

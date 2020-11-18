@@ -5,26 +5,29 @@
                 <table class="table table-striped table-hover">
                     <thead class="thead-dark">
                         <tr>
+                            <th scope="col" class="selection-btn-container">Sélection</th>
                             <th scope="col">Nom</th>
                             <th scope="col">Adresse</th>
-                            <th scope="col" v-if="showResults"></th>
-                            <th scope="col"></th>
+                            <th scope="col" v-if="showResults">Score</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="candidate in candidates" :key="candidate.address">
+                        <tr v-for="(candidate, index) in candidates" :key="candidate.address">
+                            <td class="d-flex flex-column">
+                                <b-button variant="outline-primary" :disabled="index === 0" @click="up(index)">↑</b-button>
+                                <b-button variant="outline-primary" :disabled="index === candidates.length - 1" @click="down(index)">↓</b-button>
+                            </td>
                             <td>{{ candidate.name }}</td>
                             <td>{{ candidate.address }}</td>
-                            <td v-if="showResults">{{ candidate.voteCount }}%</td>
-                            <td>
-                                <b-button
-                                variant="success"
-                                :disabled="voted || disabled"
-                                @click="vote($event, candidate)">Voter</b-button>
-                            </td>
+                            <td v-if="showResults">{{ candidate.voteCount }}</td>
                         </tr>
                     </tbody>
                 </table>
+            </b-col>
+        </b-row>
+        <b-row>
+            <b-col class="d-flex justify-content-center">
+                <b-button variant="success" @click="vote" :disabled="voted">{{ voteBtnText }}</b-button>
             </b-col>
         </b-row>
     </div>
@@ -36,26 +39,44 @@
         props: {
             disabled: { type: Boolean, default: false },
             showResults: { type: Boolean, default: false },
-            firstRound: { type: Boolean, default: true }
         },
         data () {
             return {
                 candidates: [],
-                voted: false
+                voted: false,
+                voteBtnText: "Voter !"
             }
         },
         methods: {
-            vote: function (e, candidate) {
-                window.contract.methods.vote_to(candidate.address).send({ value: 0, from: window.accountManager.getActiveAccount(), gas: 4700000 }, result => {
+            up(index) {
+                const current = this.candidates[index]
+                const previous = this.candidates[index-1]
+                this.$set(this.candidates, index-1, current)
+                this.$set(this.candidates, index, previous)
+            },
+            down(index) {
+                const current = this.candidates[index]
+                const next = this.candidates[index+1]
+                this.$set(this.candidates, index+1, current)
+                this.$set(this.candidates, index, next)
+            },
+            vote() {
+                const adresses = []
+                for(let i in this.candidates) {
+                    adresses.push(this.candidates[i].address)
+                }
+                // TODO update this
+                window.contract.methods.vote_to(this.candidates).send({ value: 0, from: window.accountManager.getActiveAccount(), gas: 4700000 }, result => {
                     if (result instanceof Error) {
                         console.error(result)
                     } else {
-                        e.target.textContent = 'A voté !'
+                        this.voteBtnText = 'A voté !'
                         this.voted = true
                     }
                 })
             },
-            refresh: function (callback) {
+            refresh(callback) {
+                // TODO update this
                 window.contract.methods.get_candidates(this.firstRound).call()
                 .then(result => {
                     const candidates = []
@@ -93,8 +114,12 @@
     }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .table td {
-    vertical-align: unset;
+    vertical-align: middle;
+}
+
+.selection-btn-container {
+    width: 1px;
 }
 </style>
