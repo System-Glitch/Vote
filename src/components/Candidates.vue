@@ -42,7 +42,11 @@
         },
         data () {
             return {
-                candidates: [],
+                candidates: [
+                    {name: "Jean-Marie Le Pen", address: "ausekour"},
+                    {name: "Jean-Luc Mélanchon", address: "larepubliquecmoi"},
+                    {name: "Emmanuel Macron", address: "parcequecestnotreprojet"},
+                ],
                 voted: false,
                 voteBtnText: "Voter !"
             }
@@ -75,37 +79,37 @@
                     }
                 })
             },
-            refresh(callback) {
+            refresh() {
                 // TODO update this
-                window.contract.methods.get_candidates(this.firstRound).call()
-                .then(result => {
-                    const candidates = []
+                // window.contract.methods.get_candidates(this.firstRound).call()
+                // .then(result => {
+                //     const candidates = []
 
-                    for (let key in result) {
-                        const c = result[key]
-                        candidates.push({ address: c[0], voteCount: parseInt(c[1]), name: c[2] })
-                    }
+                //     for (let key in result) {
+                //         const c = result[key]
+                //         candidates.push({ address: c[0], voteCount: parseInt(c[1]), name: c[2] })
+                //     }
 
-                    let total = 0
-                    for (let key in candidates) {
-                        total += candidates[key].voteCount
-                    }
+                //     let total = 0
+                //     for (let key in candidates) {
+                //         total += candidates[key].voteCount
+                //     }
 
-                    for (let key in candidates) {
-                        const candidate = candidates[key]
-                        candidate.voteCount = candidate.voteCount / total * 100
-                    }
+                //     for (let key in candidates) {
+                //         const candidate = candidates[key]
+                //         candidate.voteCount = candidate.voteCount / total * 100
+                //     }
 
-                    this.candidates = candidates
+                //     this.candidates = candidates
 
-                    if (callback !== undefined) {
-                        callback(candidates)
-                    }
-                })
-                .catch(error => {
-                    this.candidates = []
-                    console.error(error)
-                })
+                //     if (callback !== undefined) {
+                //         callback(candidates)
+                //     }
+                // })
+                // .catch(error => {
+                //     this.candidates = []
+                //     console.error(error)
+                // })
             }
         },
         mounted () {

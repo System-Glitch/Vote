@@ -14,21 +14,6 @@
                     />
                 </b-form-group>
             </b-col>
-
-            <b-col>
-                <b-form-group
-                label="Numéro de compte"
-                label-for="input-contract-account">
-                    <b-form-input
-                    v-model="account"
-                    :disabled="disabled"
-                    type="number"
-                    required
-                    placeholder="Compte"
-                    />
-                </b-form-group>
-            </b-col>
-
             <b-col>
                 <b-button variant="success" @click="submit" :disabled="disabled" class="mt-3">Valider</b-button>
             </b-col>
