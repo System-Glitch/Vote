@@ -16,7 +16,7 @@
                 <candidates v-if="state >= 0" :disabled="state != 1" :showResults="state > 1" ref="candidates"/>
                 <b-row v-if="winner && state > 1">
                     <b-col>
-                        <h4 class="text-center">Élu : <b>{{ winner.name }}</b> avec <b>{{ winner.voteCount }}</b> points.</h4>
+                        <h4 class="text-center">Élu : <b>{{ winner.name }}</b> avec <b>{{ winner.score }}</b> points.</h4>
                     </b-col>
                 </b-row>
             </template>
@@ -30,7 +30,7 @@
         data () {
             return {
                 winner: null,
-                state: -1
+                state: 0
             }
         },
         methods: {
@@ -57,8 +57,8 @@
                 let maxCandidate = null
                 for (let key in candidates) {
                     const candidate = candidates[key]
-                    if (candidate.voteCount > max) {
-                        max = candidate.voteCount
+                    if (candidate.score > max) {
+                        max = candidate.score
                         maxCandidate = candidate
                     }
                 }

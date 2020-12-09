@@ -19,7 +19,7 @@
                             </td>
                             <td>{{ candidate.name }}</td>
                             <td>{{ candidate.address }}</td>
-                            <td v-if="showResults">{{ candidate.voteCount }}</td>
+                            <td v-if="showResults">{{ candidate.score }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -79,37 +79,36 @@
                     }
                 })
             },
-            refresh() {
-                // TODO update this
-                // window.contract.methods.get_candidates(this.firstRound).call()
-                // .then(result => {
-                //     const candidates = []
+            refresh(callback) {
+                window.contract.methods.get_candidates().call()
+                .then(result => {
+                    const candidates = []
 
-                //     for (let key in result) {
-                //         const c = result[key]
-                //         candidates.push({ address: c[0], voteCount: parseInt(c[1]), name: c[2] })
-                //     }
+                    for (let key in result) {
+                        const c = result[key]
+                        candidates.push({ address: c[0], score: parseInt(c[1]), name: c[2] })
+                    }
 
-                //     let total = 0
-                //     for (let key in candidates) {
-                //         total += candidates[key].voteCount
-                //     }
+                    let total = 0
+                    for (let key in candidates) {
+                        total += candidates[key].score
+                    }
 
-                //     for (let key in candidates) {
-                //         const candidate = candidates[key]
-                //         candidate.voteCount = candidate.voteCount / total * 100
-                //     }
+                    for (let key in candidates) {
+                        const candidate = candidates[key]
+                        candidate.score = candidate.score / total * 100
+                    }
 
-                //     this.candidates = candidates
+                    this.candidates = candidates
 
-                //     if (callback !== undefined) {
-                //         callback(candidates)
-                //     }
-                // })
-                // .catch(error => {
-                //     this.candidates = []
-                //     console.error(error)
-                // })
+                    if (callback !== undefined) {
+                        callback(candidates)
+                    }
+                })
+                .catch(error => {
+                    this.candidates = []
+                    console.error(error)
+                })
             }
         },
         mounted () {
