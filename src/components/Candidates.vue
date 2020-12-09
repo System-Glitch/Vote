@@ -8,18 +8,18 @@
                             <th scope="col" class="selection-btn-container">Sélection</th>
                             <th scope="col">Nom</th>
                             <th scope="col">Adresse</th>
-                            <th scope="col" v-if="showResults">Score</th>
+                            <th scope="col" v-if="state > 1">Score</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(candidate, index) in candidates" :key="candidate.address">
+                        <tr v-for="(candidate, index) in displayCandidates" :key="candidate.address">
                             <td class="d-flex flex-column">
                                 <b-button variant="outline-primary" :disabled="index === 0" @click="up(index)">↑</b-button>
                                 <b-button variant="outline-primary" :disabled="index === candidates.length - 1" @click="down(index)">↓</b-button>
                             </td>
                             <td>{{ candidate.name }}</td>
                             <td>{{ candidate.address }}</td>
-                            <td v-if="showResults">{{ candidate.score }}</td>
+                            <td v-if="state > 1">{{ candidate.score }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -27,7 +27,7 @@
         </b-row>
         <b-row>
             <b-col class="d-flex justify-content-center">
-                <b-button variant="success" @click="vote" :disabled="voted">{{ voteBtnText }}</b-button>
+                <b-button variant="success" @click="vote" :disabled="voted || state != 1">{{ voteBtnText }}</b-button>
             </b-col>
         </b-row>
     </div>
@@ -38,17 +38,18 @@
         name: 'Candidates',
         props: {
             disabled: { type: Boolean, default: false },
-            showResults: { type: Boolean, default: false },
+            state: { type: Number, required: true },
         },
         data () {
             return {
-                candidates: [
-                    {name: "Jean-Marie Le Pen", address: "ausekour"},
-                    {name: "Jean-Luc Mélanchon", address: "larepubliquecmoi"},
-                    {name: "Emmanuel Macron", address: "parcequecestnotreprojet"},
-                ],
+                candidates: [],
                 voted: false,
                 voteBtnText: "Voter !"
+            }
+        },
+        computed: {
+            displayCandidates() {
+                return this.state == 2 ? this.candidates.slice().sort(this.byScore) : this.candidates
             }
         },
         methods: {
@@ -65,50 +66,50 @@
                 this.$set(this.candidates, index, next)
             },
             vote() {
-                const adresses = []
-                for(let i in this.candidates) {
-                    adresses.push(this.candidates[i].address)
-                }
-                // TODO update this
-                window.contract.methods.vote_to(this.candidates.map(c => c.address)).send({ value: 0, from: window.accountManager.getActiveAccount(), gas: 4700000 }, result => {
-                    if (result instanceof Error) {
-                        console.error(result)
-                    } else {
-                        this.voteBtnText = 'A voté !'
-                        this.voted = true
-                    }
+                window.web3.eth.getAccounts().then((accounts) => {
+                    window.contract.methods.vote_to(this.candidates.map(c => c.address)).send({ value: 0, from: accounts[0], gas: 4700000 }, result => {
+                        if (result instanceof Error) {
+                            console.error(result)
+                        } else {
+                            this.voteBtnText = 'A voté !'
+                            this.voted = true
+                        }
+                    })
                 })
             },
             refresh(callback) {
-                window.contract.methods.get_candidates().call()
-                .then(result => {
-                    const candidates = []
+                window.web3.eth.getAccounts().then((accounts) => {
+                    window.contract.methods.get_candidates().call({from: accounts[0]}, (error, result) => {
+                        if (error) {
+                            this.candidates = []
+                            console.error(error)
+                        } else {
+                            const candidates = []
+        
+                            for (let key in result) {
+                                const c = result[key]
+                                candidates.push({ address: c[0], score: parseInt(c[1]), name: c[2] })
+                            }
+        
+                            candidates.forEach(c => {
+                                if(!this.candidates.some(cc => c.address === cc.address)) {
+                                    this.candidates.push(c)
+                                }
+                            })
 
-                    for (let key in result) {
-                        const c = result[key]
-                        candidates.push({ address: c[0], score: parseInt(c[1]), name: c[2] })
-                    }
-
-                    let total = 0
-                    for (let key in candidates) {
-                        total += candidates[key].score
-                    }
-
-                    for (let key in candidates) {
-                        const candidate = candidates[key]
-                        candidate.score = candidate.score / total * 100
-                    }
-
-                    this.candidates = candidates
-
-                    if (callback !== undefined) {
-                        callback(candidates)
-                    }
+                            if (callback !== undefined) {
+                                callback(this.candidates)
+                            }
+                        }
+                    })
                 })
-                .catch(error => {
-                    this.candidates = []
-                    console.error(error)
-                })
+            },
+            byScore(a, b) {
+                if(a.score === b.score) {
+                    return 0
+                }
+
+                return a.score > b.score ? -1 : 1
             }
         },
         mounted () {

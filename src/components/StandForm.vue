@@ -39,13 +39,15 @@
         },
         methods: {
             submit: function () {
-                window.contract.methods.add_candidate(this.name).send({ value: 0, from: window.accountManager.getActiveAccount(), gas: 4700000 }, result => {
-                    if (result instanceof Error) {
-                        console.error(result)
-                    } else {
-                        this.stood = true
-                        this.$emit('submit')
-                    }
+                window.web3.eth.getAccounts().then((accounts) => {
+                    window.contract.methods.add_candidate(this.name).send({ value: 0, from: accounts[0], gas: 4700000 }, result => {
+                        if (result instanceof Error) {
+                            console.error(result)
+                        } else {
+                            this.stood = true
+                            this.$emit('submit')
+                        }
+                    })
                 })
             }
         }

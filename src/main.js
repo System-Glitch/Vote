@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import {BCard, BCol, BRow, BButton, BForm, BFormGroup, BFormInput} from 'bootstrap-vue'
 import App from './App.vue'
-import AccountManager from './AccountManager.js'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -18,27 +17,16 @@ Vue.component("b-form-input", BFormInput)
 
 Vue.config.productionTip = false
 
-window.accountManager = new AccountManager()
-
 const Web3 = require('web3')
-window.Web3 = Web3
-window.web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
 
-window.web3.eth.getAccounts()
-.then((accounts) => {
-    const temp = []
-    for (let key in accounts) {
-        const account = accounts[key]
-        temp.push(account)
+if (window.ethereum) {
+    window.web3 = new Web3(window.ethereum)
+    try {
+        window.ethereum.enable()
+    } catch (error) {
+        console.error('Providers Error : ' + error)
     }
-    if (window.accountManager.accounts.length === 0) {
-        window.accountManager.selectedAccount = 0
-    }
-    window.accountManager.accounts = temp
-})
-.catch((error) => {
-    console.error("Couldn't fetch accounts: " + error.message)
-})
+}
 
 // Load all components
 const files = require.context('./', true, /\.vue$/i)

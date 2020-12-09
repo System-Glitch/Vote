@@ -13,7 +13,7 @@
                 <standform v-if="state >= 0" @submit="refresh" @refresh="refresh"/>
 
                 <hr>
-                <candidates v-if="state >= 0" :disabled="state != 1" :showResults="state > 1" ref="candidates"/>
+                <candidates v-if="state >= 0" :disabled="state != 1" :state="state" ref="candidates"/>
                 <b-row v-if="winner && state > 1">
                     <b-col>
                         <h4 class="text-center">Élu : <b>{{ winner.name }}</b> avec <b>{{ winner.score }}</b> points.</h4>
@@ -30,25 +30,27 @@
         data () {
             return {
                 winner: null,
-                state: 0
+                state: -1
             }
         },
         methods: {
             refresh: function () {
                 if (window.contract) {
-                    window.contract.methods.get_vote_state.call()
-                    .then(result => {
-                        this.state = result
-
-                        this.$nextTick(() => {
-                            if (this.state >= 0) {
-                                this.$refs.candidates.refresh(candidates => this.refreshWinner(candidates))
+                    window.web3.eth.getAccounts().then((accounts) => {
+                        window.contract.methods.get_vote_state().call({from: accounts[0]}, (error, result) => {
+                            if (error) {
+                                this.state = -1
+                                console.error(error)
+                            } else {
+                                this.state = parseInt(result)
+    
+                                this.$nextTick(() => {
+                                    if (this.state >= 0) {
+                                        this.$refs.candidates.refresh(candidates => this.refreshWinner(candidates))
+                                    }
+                                })
                             }
                         })
-                    })
-                    .catch(error => {
-                        this.state = -1
-                        console.error(error)
                     })
                 }
             },

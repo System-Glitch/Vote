@@ -38,12 +38,8 @@
                 const abi = require('../abi.json')
                 window.contract = new window.web3.eth.Contract(abi, this.contractAddress)
             },
-            setAccount: function () {
-                window.accountManager.selectedAccount = this.account
-            },
             submit: function () {
                 this.setAddress()
-                this.setAccount()
                 this.$emit('submit')
             }
         }
