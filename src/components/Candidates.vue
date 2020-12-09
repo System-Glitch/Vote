@@ -92,8 +92,11 @@
                             }
         
                             candidates.forEach(c => {
-                                if(!this.candidates.some(cc => c.address === cc.address)) {
+                                const candidate = this.candidates.find(cc => c.address === cc.address)
+                                if(!candidate) {
                                     this.candidates.push(c)
+                                } else {
+                                    candidate.score = c.score
                                 }
                             })
 
