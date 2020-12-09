@@ -17,34 +17,47 @@
             <b-col>
                 <b-button variant="success" @click="submit" :disabled="disabled" class="mt-3">Valider</b-button>
             </b-col>
+            <b-col>
+                <b-button variant="success" @click="deploy" :disabled="disabled" class="mt-3">Créer un nouveau vote</b-button>
+            </b-col>
         </b-row>
     </div>
 </template>
 
 <script>
-    export default {
-        name: 'VoteForm',
-        props: {
-            disabled: { type: Boolean, default: false }
+import abi from "../abi.json"
+import bytecode from "../bytecode.json"
+
+export default {
+    name: 'VoteForm',
+    props: {
+        disabled: { type: Boolean, default: false }
+    },
+    data () {
+        return {
+            contractAddress: '',
+            account: 0
+        }
+    },
+    methods: {
+        setAddress() {
+            window.contract = new window.web3.eth.Contract(abi, this.contractAddress)
         },
-        data () {
-            return {
-                contractAddress: '',
-                account: 0
-            }
+        submit() {
+            this.setAddress()
+            this.$emit('submit')
         },
-        methods: {
-            setAddress: function () {
-                const abi = require('../abi.json')
-                window.contract = new window.web3.eth.Contract(abi, this.contractAddress)
-            },
-            submit: function () {
-                this.setAddress()
-                this.$emit('submit')
-            }
+        deploy() {
+            window.web3.eth.getAccounts().then((accounts) => {
+                const contract = new window.web3.eth.Contract(abi, undefined, {transactionConfirmationBlocks: 1});
+                contract.deploy({data: bytecode.object}).send({ value: 0, from: accounts[0], gas: 4700000 })
+                .then(contract => {
+                    this.contractAddress = contract.options.address
+                    this.submit()
+                })
+                .catch(error => console.err(error))
+            })
         }
     }
+}
 </script>
-
-<style lang="scss">
-</style>
