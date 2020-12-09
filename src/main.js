@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import BootstrapVue from 'bootstrap-vue'
+import {BCard, BCol, BRow, BButton, BForm, BFormGroup, BFormInput} from 'bootstrap-vue'
 import App from './App.vue'
 import AccountManager from './AccountManager.js'
 
@@ -8,7 +8,13 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 require('./sass/app.scss')
 
 window.Vue = Vue
-Vue.use(BootstrapVue)
+Vue.component("b-card", BCard)
+Vue.component("b-col", BCol)
+Vue.component("b-row", BRow)
+Vue.component("b-button", BButton)
+Vue.component("b-form", BForm)
+Vue.component("b-form-group", BFormGroup)
+Vue.component("b-form-input", BFormInput)
 
 Vue.config.productionTip = false
 
