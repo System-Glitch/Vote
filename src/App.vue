@@ -10,6 +10,14 @@
 
             <voteform :disabled="state >= 0" @submit="refresh"/>
             <template v-if="state >= 0">
+                <b-row v-if="account === owner && account !== null" class="mb-3">
+                    <b-col>
+                        <b-button variant="success" @click="startVote" :disabled="state !== 0">Démarrer le vote</b-button>
+                    </b-col>
+                    <b-col>
+                        <b-button variant="success" @click="endVote" :disabled="state !== 1">Arrêter le vote</b-button>
+                    </b-col>
+                </b-row>
                 <standform v-if="state >= 0" @submit="refresh" @refresh="refresh"/>
 
                 <hr>
@@ -30,6 +38,8 @@
         data () {
             return {
                 winner: null,
+                account: null,
+                owner: null,
                 state: -1
             }
         },
@@ -37,7 +47,16 @@
             refresh: function () {
                 if (window.contract) {
                     window.web3.eth.getAccounts().then((accounts) => {
-                        window.contract.methods.get_vote_state().call({from: accounts[0]}, (error, result) => {
+                        this.account = accounts[0]
+                        window.contract.methods.owner().call({from: this.account}, (error, result) => {
+                            if (error) {
+                                this.owner = null
+                                console.error(error)
+                            } else {
+                                this.owner = result
+                            }
+                        })
+                        window.contract.methods.get_vote_state().call({from: this.account}, (error, result) => {
                             if (error) {
                                 this.state = -1
                                 console.error(error)
@@ -66,6 +85,20 @@
                 }
 
                 this.winner = maxCandidate
+            },
+            startVote() {
+                window.contract.methods.start_vote().send({ value: 0, from: this.account, gas: 4700000 }, result => {
+                    if (result instanceof Error) {
+                        console.error(result)
+                    }
+                })
+            },
+            endVote() {
+                window.contract.methods.end_vote().send({ value: 0, from: this.account, gas: 4700000 }, result => {
+                    if (result instanceof Error) {
+                        console.error(result)
+                    }
+                })
             }
         },
         mounted () {
