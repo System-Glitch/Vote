@@ -66,7 +66,7 @@
                     adresses.push(this.candidates[i].address)
                 }
                 // TODO update this
-                window.contract.methods.vote_to(this.candidates).send({ value: 0, from: window.accountManager.getActiveAccount(), gas: 4700000 }, result => {
+                window.contract.methods.vote_to(this.candidates.map(c => c.address)).send({ value: 0, from: window.accountManager.getActiveAccount(), gas: 4700000 }, result => {
                     if (result instanceof Error) {
                         console.error(result)
                     } else {
